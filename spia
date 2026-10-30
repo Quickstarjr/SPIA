@@ -1,0 +1,190 @@
+#!/usr/bin/env bash
+set -u
+
+HERE="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+PYTHON="${SPIA_PYTHON:-$HERE/.venv/bin/python}"
+PORT="${SPIA_PORT:-8767}"
+HOST="127.0.0.1"
+PIDFILE="$HERE/.spia.pid"
+LOGFILE="$HERE/spia.log"
+URL="http://${HOST}:${PORT}"
+
+valid_pid() {
+    [[ "${1:-}" =~ ^[1-9][0-9]*$ ]] && kill -0 "$1" 2>/dev/null
+}
+
+is_managed_process() {
+    local pid="$1"
+    local arg
+    local found_uvicorn=0
+    local found_app=0
+    local found_dir=0
+    local found_host=0
+    local found_port=0
+    local expect=""
+
+    [[ -r "/proc/$pid/cmdline" && -d "/proc/$pid" ]] || return 1
+    [[ "$(readlink -f "/proc/$pid/cwd" 2>/dev/null)" == "$HERE" ]] || return 1
+
+    while IFS= read -r -d '' arg; do
+        if [[ "$expect" == "appdir" ]]; then
+            [[ "$arg" == "$HERE" ]] && found_dir=1
+            expect=""
+            continue
+        elif [[ "$expect" == "host" ]]; then
+            [[ "$arg" == "$HOST" ]] && found_host=1
+            expect=""
+            continue
+        elif [[ "$expect" == "port" ]]; then
+            [[ "$arg" == "$PORT" ]] && found_port=1
+            expect=""
+            continue
+        fi
+
+        case "$arg" in
+            uvicorn|-m) [[ "$arg" == "uvicorn" ]] && found_uvicorn=1 ;;
+            server:app) found_app=1 ;;
+            --app-dir) expect="appdir" ;;
+            --host) expect="host" ;;
+            --port) expect="port" ;;
+        esac
+    done < "/proc/$pid/cmdline"
+
+    [[ "$found_uvicorn" == 1 &&
+       "$found_app" == 1 &&
+       "$found_dir" == 1 &&
+       "$found_host" == 1 &&
+       "$found_port" == 1 ]]
+}
+
+healthcheck() {
+    curl -fsS --max-time 2 "$URL/api/monitor" >/dev/null 2>&1
+}
+
+case "${1:-status}" in
+    start)
+        if [[ ! -x "$PYTHON" ]]; then
+            echo "ERRO: Python do SPIA não encontrado: $PYTHON"
+            exit 1
+        fi
+
+        if [[ -f "$PIDFILE" ]]; then
+            pid="$(cat "$PIDFILE" 2>/dev/null || true)"
+            if valid_pid "$pid"; then
+                if is_managed_process "$pid"; then
+                    echo "A SPIA já possui um processo registrado: $pid"
+                    exit 1
+                fi
+                echo "O PID registrado pertence a outro processo."
+                echo "Por segurança, não vou iniciar nem encerrar processos."
+                exit 1
+            fi
+            rm -f "$PIDFILE"
+        fi
+
+        if curl -fsS --max-time 2 "$URL/" >/dev/null 2>&1; then
+            echo "A porta $PORT já responde em $URL."
+            echo "Nenhum processo foi iniciado."
+            exit 1
+        fi
+
+        nohup "$PYTHON" -m uvicorn server:app \
+            --app-dir "$HERE" \
+            --host "$HOST" \
+            --port "$PORT" \
+            --log-level info >>"$LOGFILE" 2>&1 </dev/null &
+
+        pid=$!
+        printf '%s\n' "$pid" > "$PIDFILE"
+
+        for _ in {1..10}; do
+            if healthcheck && is_managed_process "$pid"; then
+                echo "SPIA iniciada!"
+                echo "URL: $URL"
+                echo "PID: $pid"
+                echo "Log: $LOGFILE"
+                exit 0
+            fi
+
+            if ! valid_pid "$pid"; then
+                break
+            fi
+            sleep 1
+        done
+
+        echo "A SPIA não passou na verificação de saúde."
+        if ! valid_pid "$pid"; then
+            rm -f "$PIDFILE"
+        fi
+        echo "Consulte o log: $LOGFILE"
+        echo "Nenhum processo antigo foi encerrado."
+        exit 1
+        ;;
+
+    status)
+        if [[ -f "$PIDFILE" ]]; then
+            pid="$(cat "$PIDFILE" 2>/dev/null || true)"
+            if valid_pid "$pid"; then
+                if is_managed_process "$pid"; then
+                    if healthcheck; then
+                        echo "SPIA gerenciada pelo script: ativa (PID $pid)"
+                        echo "URL: $URL"
+                        exit 0
+                    fi
+                    echo "O processo corresponde à SPIA, mas a verificação de saúde falhou."
+                    exit 1
+                fi
+                echo "O PID existe, mas não corresponde à SPIA esperada."
+                echo "Por segurança, não vou encerrar nem substituir esse processo."
+                exit 1
+            fi
+            echo "O PID registrado não está ativo."
+        else
+            echo "Nenhum PID registrado pelo script."
+        fi
+
+        if curl -fsS --max-time 2 "$URL/" >/dev/null 2>&1; then
+            echo "Uma aplicação responde em $URL, mas não está registrada pelo script."
+        else
+            echo "Nenhuma aplicação HTTP detectada em $URL."
+        fi
+        ;;
+
+    stop)
+        if [[ ! -f "$PIDFILE" ]]; then
+            echo "Não há PID registrado. Nenhum processo foi encerrado."
+            exit 1
+        fi
+
+        pid="$(cat "$PIDFILE" 2>/dev/null || true)"
+        if ! valid_pid "$pid" || ! is_managed_process "$pid"; then
+            echo "Não foi possível confirmar a identidade do processo."
+            echo "Por segurança, nenhum processo foi encerrado."
+            exit 1
+        fi
+
+        kill -TERM "$pid" || exit 1
+
+        for _ in {1..10}; do
+            if ! kill -0 "$pid" 2>/dev/null; then
+                rm -f "$PIDFILE"
+                echo "SPIA encerrada."
+                exit 0
+            fi
+            sleep 1
+        done
+
+        echo "O processo ainda está ativo. PID preservado para nova verificação: $pid"
+        exit 1
+        ;;
+
+    logs)
+        touch "$LOGFILE"
+        tail -n 50 -f "$LOGFILE"
+        ;;
+
+    *)
+        echo "Uso: ./spia {start|status|stop|logs}"
+        exit 2
+        ;;
+esac

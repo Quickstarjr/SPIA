@@ -1,0 +1,8 @@
+# SPIA — servidor web e terminal integrado
+# Ambiente validado: Python 3.13.16
+
+fastapi==0.162.0
+uvicorn==0.54.0
+
+# Cliente HTTP opcional — chat do Puppy
+httpx==0.28.1

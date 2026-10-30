@@ -1,0 +1,32 @@
+# Segredos e configurações locais
+.env
+.env.*
+!.env.example
+
+# Identificadores e metadados locais
+*:Zone.Identifier
+.spia.pid
+
+# Ambientes Python
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# Logs e arquivos temporários
+*.log
+*.tmp
+*.swp
+.DS_Store
+
+# Projetos administrados pela SPIA
+projects/*
+!projects/README.md
+
+# Backups locais
+backups/
+*.backup-*
+*.bak-*

@@ -1,0 +1,2102 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SPIA — silicon_puppy</title>
+
+<link rel="stylesheet"
+ href="https://cdn.jsdelivr.net/npm/@xterm/xterm@5.5.0/css/xterm.css">
+
+<link rel="stylesheet" href="/spia.css">
+</head>
+
+<body>
+<header>
+  <div>
+    <div class="brand">SPIA <span class="sub">/ silicon_puppy</span></div>
+
+  </div>
+  <div id="status">Loading terminal…</div>
+</header>
+
+<main>
+<aside id="spia-left" aria-label="Tools and files">
+  <nav id="tool-rail" aria-label="SPIA tools">
+    <button id="explorer-toggle" type="button" aria-expanded="true"
+            title="Show or hide Explorer">📁</button>
+    <button type="button" title="Commands (coming soon)" disabled>⌘</button>
+    <button type="button" title="Results (coming soon)" disabled>▤</button>
+    <button type="button" title="Git (coming soon)" disabled>⑂</button>
+  </nav>
+  <aside id="explorer-panel" aria-label="File Explorer">
+    <div class="file-sidebar">
+      <div class="file-sidebar-head explorer-heading">
+        <span>EXPLORER</span>
+        <div class="explorer-actions">
+          <button id="spia-new-file-button" type="button"
+            title="Create file" aria-label="Create file">＋</button>
+          <button id="spia-new-directory-button" type="button"
+            title="Create folder" aria-label="Create folder">📁＋</button>
+        </div>
+      </div>
+      <div class="file-toolbar">
+        <button id="files-up" type="button" title="Go up one directory">↑ Back</button>
+        <button id="files-refresh" type="button">Refresh</button>
+      </div>
+      <input id="file-path" type="text" value="" readonly aria-label="Current directory">
+      <div id="file-list" aria-live="polite">Open the Explorer to list files.</div>
+    </div>
+  </aside>
+</aside>
+
+<section id="workspace-center" aria-label="Área de trabalho">
+  <section class="module" id="panel-terminal" data-collapsed="false"
+           aria-label="SPIA terminal">
+    <div class="terminal-module-head">
+      <button class="module-head" type="button" aria-expanded="true"
+              aria-controls="terminal-panel-body">
+        <span>TERMINAL</span><span class="collapse-mark">−</span>
+      </button>
+      <button id="terminal-new-tab" type="button">＋ New terminal</button>
+    </div>
+    <div class="module-body" id="terminal-panel-body">
+      <section class="terminal" aria-label="Terminal">
+        <!-- SPIA_TERMINAL_TABS_V1 -->
+        <div id="terminal-tabs" class="terminal-tabs" role="tablist"
+             aria-label="Terminals"></div>
+        <div id="terminal-views" class="terminal-views"></div>
+        <footer>
+          <button id="paste" type="button">Paste</button>
+          <button id="run" type="button">Run</button>
+          <button id="copy" type="button">Copy</button>
+          <button id="clear" type="button">Clear</button>
+        </footer>
+      </section>
+    </div>
+  </section>
+
+  <section class="module" id="panel-editor" data-collapsed="false"
+           aria-label="File editor">
+    <button class="module-head" type="button" aria-expanded="true"
+            aria-controls="editor-panel-body">
+      <span>CODE EDITOR</span><span class="collapse-mark">−</span>
+    </button>
+    <div class="module-body" id="editor-panel-body">
+      <div class="editor-shell">
+        <section class="editor-main" aria-label="Editing area">
+          <div class="editor-head">
+            <span>Open file</span>
+            <span id="editor-current-path">No file open</span>
+          </div>
+          <div id="editor-tabs" role="tablist"
+               aria-label="Files open in editor" hidden></div>
+          <div id="editor-placeholder">Select a file in the Explorer to get started.</div>
+          <div id="editor-edit-area" hidden>
+            <div id="editor-codemirror-host"
+                 aria-label="File contents"></div>
+          </div>
+          <footer class="editor-footer">
+            <button id="editor-copy-code" type="button" disabled>Copy código</button>
+            <button id="editor-paste" type="button" disabled>Paste</button>
+            <button id="editor-copy-path" type="button" disabled>Copy caminho</button>
+            <button id="editor-save" type="button" disabled>Save</button>
+            <button id="editor-reload" type="button" disabled>Reload</button>
+            <span id="editor-state" data-state="closed">No file</span>
+            <span id="editor-message">No file open.</span>
+          </footer>
+        </section>
+      </div>
+    </div>
+  </section>
+
+  <section class="module" id="panel-visualizer" data-collapsed="true"
+           aria-label="Results viewer">
+    <button class="module-head" type="button" aria-expanded="false"
+            aria-controls="visualizer-panel-body">
+      <span>VIEWER</span><span class="collapse-mark">+</span>
+    </button>
+    <div class="module-body" id="visualizer-panel-body">
+      <div id="visualizer-placeholder" class="side-placeholder">
+        Select an image in the Explorer to preview it here.
+      </div>
+      <div id="image-preview" hidden>
+        <div id="image-preview-tabs" role="tablist"
+             aria-label="Images open in viewer"></div>
+        <div id="image-preview-toolbar">
+          <span id="image-preview-path"></span>
+          <button id="image-open-new" type="button">Open in new tab</button>
+        </div>
+        <div id="image-preview-stage">
+          <img id="preview-image" alt="Pré-visualização da imagem selecionada">
+      <!-- SPIA_PREVIEW_HTML_CSV_V1 -->
+      <iframe id="preview-html-frame" title="Pré-visualização HTML"
+              sandbox="" hidden></iframe>
+      <div id="preview-csv-container" hidden></div>
+        </div>
+      </div>
+    </div>
+  </section>
+</section>
+
+<aside id="filhote-panel" aria-label="Monitor de recursos e assistente Puppy" hidden>
+  <div class="side-head" id="spia-clock">🕒 SPIA · --:--:--</div>
+
+  <section id="resource-monitor" aria-label="Monitor de recursos">
+    <div class="side-subhead">📊 MONITOR DE RECURSOS</div>
+    <div class="resource-grid">
+      <div class="resource-card">
+        <span>CPU do sistema</span>
+        <strong id="system-cpu">—</strong>
+      </div>
+      <div class="resource-card">
+        <span>RAM do sistema</span>
+        <strong id="system-ram">—</strong>
+      </div>
+      <div class="resource-card">
+        <span>CPU do processo</span>
+        <strong id="process-cpu">—</strong>
+      </div>
+      <div class="resource-card">
+        <span>RAM do processo</span>
+        <strong id="process-ram">—</strong>
+      </div>
+      <div class="resource-note" id="process-status">
+        Monitor visual — aguardando integração com o servidor.
+      </div>
+    </div>
+  </section>
+
+  <section id="filhote-assistant" aria-label="Assistente Puppy">
+    <div class="side-subhead">🐶 PUPPY · NVIDIA</div>
+    <div id="filhote-messages" role="log" aria-live="polite"
+         aria-label="Conversa com Puppy">
+      <div class="filhote-message assistant">Olá! Sou o Puppy, assistente da SPIA. Vamos testar nossa conexão com a NVIDIA?</div>
+    </div>
+    <form id="filhote-form">
+      <textarea id="filhote-input" rows="3" maxlength="4000"
+                placeholder="Escreva sua mensagem..." aria-label="Mensagem para Puppy"
+                required></textarea>
+      <button id="filhote-send" type="submit">Enviar</button>
+      <div id="filhote-status" role="status" aria-live="polite"></div>
+    </form>
+  </section>
+</aside>
+<button id="filhote-toggle" type="button" aria-expanded="false"
+        title="Mostrar ou ocultar Puppy">‹</button>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@xterm/xterm@5.5.0/lib/xterm.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@xterm/addon-fit@0.10.0/lib/addon-fit.js"></script>
+<script src="/vendor/spia-editor.bundle.js"></script>
+
+<script>
+// SPIA_TERMINAL_TABS_V1
+const statusEl = document.querySelector('#status');
+const terminalTabs = document.querySelector('#terminal-tabs');
+const terminalViews = document.querySelector('#terminal-views');
+const newTerminalButton = document.querySelector('#terminal-new-tab');
+
+let term = null;
+let fitAddon = null;
+let ws = null;
+let reconnectTimer = null;
+let manuallyClosed = false;
+
+const terminalSessions = new Map();
+let activeSession = null;
+let nextTerminalNumber = 1;
+let fitScheduled = false;
+
+function setStatus(text, color) {
+  if (!statusEl) return;
+  statusEl.textContent = text;
+  statusEl.style.color = color || '#ffd479';
+}
+
+function syncActiveAliases() {
+  term = activeSession?.term || null;
+  fitAddon = activeSession?.fitAddon || null;
+  ws = activeSession?.ws || null;
+  reconnectTimer = activeSession?.reconnectTimer || null;
+  manuallyClosed = activeSession?.manuallyClosed || false;
+}
+
+function updateSessionIndicator(session) {
+  session.statusDot.dataset.alive = String(Boolean(session.alive));
+  session.statusDot.title = session.alive
+    ? (session.ws && session.ws.readyState === WebSocket.OPEN
+        ? 'Bash ativo e conectado'
+        : 'Bash ativo; interface desconectada')
+    : 'Bash encerrado';
+
+  session.tabButton.setAttribute(
+    'aria-label',
+    `${session.label}: ${session.alive ? 'Bash ativo' : 'Bash encerrado'}`
+  );
+}
+
+function setSessionStatus(session, text, color) {
+  if (session === activeSession) setStatus(text, color);
+}
+
+function sendResize() {
+  if (!activeSession || !activeSession.ws ||
+      activeSession.ws.readyState !== WebSocket.OPEN) return;
+
+  try {
+    activeSession.ws.send(JSON.stringify({
+      type: 'resize',
+      rows: activeSession.term.rows,
+      cols: activeSession.term.cols
+    }));
+  } catch (_) {}
+}
+
+function scheduleTerminalFit() {
+  if (fitScheduled) return;
+  fitScheduled = true;
+
+  requestAnimationFrame(() => {
+    fitScheduled = false;
+
+    if (!activeSession ||
+        panelTerminal?.dataset.collapsed === 'true') return;
+
+    const view = activeSession.view;
+    if (!view || view.clientWidth === 0 || view.clientHeight === 0) return;
+
+    try {
+      activeSession.fitAddon.fit();
+      sendResize();
+    } catch (_) {}
+
+    activeSession.term.focus();
+  });
+}
+
+function activateSession(session) {
+  if (!session || !terminalSessions.has(session.id)) return;
+
+  activeSession = session;
+
+  for (const item of terminalSessions.values()) {
+    const selected = item === session;
+    item.view.hidden = !selected;
+    item.tabButton.setAttribute('aria-selected', String(selected));
+    item.tabButton.tabIndex = selected ? 0 : -1;
+  }
+
+  syncActiveAliases();
+  setStatus(
+    session.alive
+      ? (session.ws && session.ws.readyState === WebSocket.OPEN
+          ? 'Conectado'
+          : 'Reconectando…')
+      : 'Bash encerrado',
+    session.alive ? 'var(--green)' : 'var(--red)'
+  );
+
+  scheduleTerminalFit();
+}
+
+function createSessionView(session) {
+  const item = document.createElement('div');
+  item.className = 'terminal-tab-item';
+
+  const tab = document.createElement('button');
+  tab.type = 'button';
+  tab.className = 'terminal-tab';
+  tab.setAttribute('role', 'tab');
+  tab.setAttribute('aria-selected', 'false');
+
+  const dot = document.createElement('span');
+  dot.className = 'terminal-status-dot';
+
+  const label = document.createElement('span');
+  label.textContent = session.label;
+
+  tab.append(dot, label);
+  tab.addEventListener('click', () => activateSession(session));
+
+  const close = document.createElement('button');
+  close.type = 'button';
+  close.className = 'terminal-tab-close';
+  close.textContent = '×';
+  close.title = `Fechar ${session.label}`;
+  close.setAttribute('aria-label', `Fechar ${session.label}`);
+  close.addEventListener('click', event => {
+    event.stopPropagation();
+    closeSession(session);
+  });
+
+  item.append(tab, close);
+  terminalTabs.appendChild(item);
+
+  const view = document.createElement('div');
+  view.className = 'terminal-view';
+  view.hidden = true;
+  terminalViews.appendChild(view);
+
+  const terminal = new Terminal({
+    cursorBlink: true,
+    fontSize: 13,
+    fontFamily: 'Consolas, "Liberation Mono", monospace',
+    theme: {
+      background: '#080b09',
+      foreground: '#d9e5dc',
+      cursor: '#5cff95',
+      cursorAccent: '#080b09',
+      selectionBackground: '#31563d',
+      black: '#151a17',
+      red: '#ff6b6b',
+      green: '#5cff95',
+      yellow: '#f4d35e',
+      blue: '#6ca8ff',
+      magenta: '#d78bff',
+      cyan: '#55dce8',
+      white: '#d9e5dc',
+      brightBlack: '#65736a',
+      brightRed: '#ff8585',
+      brightGreen: '#7bffaa',
+      brightYellow: '#ffe58a',
+      brightBlue: '#8bbaff',
+      brightMagenta: '#e5a8ff',
+      brightCyan: '#83f0f5',
+      brightWhite: '#ffffff'
+    },
+    scrollback: 5000,
+    convertEol: false
+  });
+
+  const fit = new FitAddon.FitAddon();
+  terminal.loadAddon(fit);
+  terminal.open(view);
+
+  Object.assign(session, {
+    view,
+    tabButton: tab,
+    statusDot: dot,
+    terminalTabItem: item,
+    closeButton: close,
+    term: terminal,
+    fitAddon: fit,
+    ws: null,
+    reconnectTimer: null,
+    manuallyClosed: false,
+    alive: Boolean(session.alive)
+  });
+
+  terminal.onData(data => {
+    if (session.ws && session.ws.readyState === WebSocket.OPEN) {
+      session.ws.send(JSON.stringify({ type: 'input', data }));
+    }
+  });
+
+  terminal.onResize(() => {
+    if (session === activeSession) sendResize();
+  });
+
+  updateSessionIndicator(session);
+}
+
+function connectSession(session) {
+  clearTimeout(session.reconnectTimer);
+  session.reconnectTimer = null;
+
+  if (session.manuallyClosed || !session.alive) return;
+
+  const proto = location.protocol === 'https:' ? 'wss' : 'ws';
+  const socket = new WebSocket(
+    `${proto}://${location.host}/ws/${encodeURIComponent(session.id)}`
+  );
+
+  session.ws = socket;
+  if (session === activeSession) syncActiveAliases();
+
+  socket.onopen = () => {
+    if (session.ws !== socket) return;
+    if (session === activeSession) {
+      syncActiveAliases();
+      setStatus('Conectado', 'var(--green)');
+      scheduleTerminalFit();
+    }
+    updateSessionIndicator(session);
+  };
+
+  socket.onmessage = event => {
+    if (session.ws !== socket) return;
+
+    let message;
+    try { message = JSON.parse(event.data); }
+    catch (_) { return; }
+
+    if (message.type === 'output') {
+      session.term.write(message.data);
+    } else if (message.type === 'status') {
+      if (message.alive === false) session.alive = false;
+      if (message.alive === true) session.alive = true;
+      updateSessionIndicator(session);
+
+      if (session === activeSession) {
+        setStatus(
+          message.text || (session.alive ? 'Conectado' : 'Bash encerrado'),
+          session.alive ? 'var(--green)' : 'var(--red)'
+        );
+      }
+    } else if (message.type === 'error') {
+      session.term.writeln('\r\n[ SPIA ] ' + message.text);
+    }
+  };
+
+  socket.onerror = () => {
+    setSessionStatus(session, 'Connection failed', 'var(--red)');
+  };
+
+  socket.onclose = event => {
+    if (session.ws !== socket) return;
+
+    session.ws = null;
+    if (session === activeSession) syncActiveAliases();
+    updateSessionIndicator(session);
+
+    if (event.code === 4404) session.alive = false;
+
+    if (!session.alive || session.manuallyClosed) {
+      setSessionStatus(session, 'Bash encerrado', 'var(--red)');
+      updateSessionIndicator(session);
+      return;
+    }
+
+    setSessionStatus(
+      session,
+      'Desconectado — tentando reconectar…',
+      'var(--red)'
+    );
+
+    session.reconnectTimer = setTimeout(
+      () => connectSession(session),
+      2500
+    );
+    if (session === activeSession) syncActiveAliases();
+  };
+}
+
+function addSession(data) {
+  const session = {
+    id: data.id,
+    label: `Terminal ${nextTerminalNumber++}`,
+    alive: Boolean(data.alive)
+  };
+
+  terminalSessions.set(session.id, session);
+  createSessionView(session);
+  activateSession(session);
+  connectSession(session);
+  return session;
+}
+
+async function createTerminal() {
+  newTerminalButton.disabled = true;
+  try {
+    const response = await fetch('/api/terminals', { method: 'POST' });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+    const data = await response.json();
+    addSession(data);
+  } catch (error) {
+    setStatus(`Could not create terminal: ${error.message}`, 'var(--red)');
+  } finally {
+    newTerminalButton.disabled = false;
+  }
+}
+
+async function closeSession(session) {
+  if (!terminalSessions.has(session.id)) return;
+
+  const confirmed = window.confirm(
+    `Fechar ${session.label}?\n\n` +
+    'Isso encerra o Bash e os processos iniciados nesta sessão, ' +
+    'incluindo um FXServer iniciado nela. Esta ação não pode ser desfeita.'
+  );
+  if (!confirmed) return;
+
+  session.manuallyClosed = true;
+  clearTimeout(session.reconnectTimer);
+  session.reconnectTimer = null;
+
+  if (session.ws) {
+    const oldSocket = session.ws;
+    session.ws = null;
+    try { oldSocket.close(1000, 'Terminal encerrado pelo usuário'); }
+    catch (_) {}
+  }
+
+  try {
+    const response = await fetch(
+      `/api/terminals/${encodeURIComponent(session.id)}`,
+      { method: 'DELETE' }
+    );
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+    session.alive = false;
+    session.term.dispose();
+    session.view.remove();
+    session.terminalTabItem.remove();
+    terminalSessions.delete(session.id);
+
+    if (activeSession === session) activeSession = null;
+
+    const remaining = Array.from(terminalSessions.values());
+    if (remaining.length) {
+      activateSession(remaining[remaining.length - 1]);
+    } else {
+      syncActiveAliases();
+      await createTerminal();
+    }
+  } catch (error) {
+    session.manuallyClosed = false;
+    setStatus(
+      `Could not close session: ${error.message}`,
+      'var(--red)'
+    );
+    if (session.alive) connectSession(session);
+  }
+}
+
+newTerminalButton.addEventListener('click', createTerminal);
+
+const terminalResizeObserver = new ResizeObserver(scheduleTerminalFit);
+terminalResizeObserver.observe(terminalViews);
+window.addEventListener('resize', scheduleTerminalFit);
+
+document.querySelector('#paste').addEventListener('click', async () => {
+  try {
+    const text = await navigator.clipboard.readText();
+    if (text && term) term.paste(text);
+    if (term) term.focus();
+  } catch (_) {
+    setStatus(
+      'Could not access the clipboard. Check your browser permissions.',
+      'var(--red)'
+    );
+  }
+});
+
+document.querySelector('#run').addEventListener('click', () => {
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    ws.send(JSON.stringify({ type: 'input', data: '\r' }));
+  } else {
+    setStatus('Terminal desconectado', 'var(--red)');
+  }
+  if (term) term.focus();
+});
+
+document.querySelector('#copy').addEventListener('click', async () => {
+  const selection = term?.getSelection();
+
+  if (!selection) {
+    setStatus('Select terminal text before copying.', 'var(--red)');
+    if (term) term.focus();
+    return;
+  }
+
+  try {
+    await navigator.clipboard.writeText(selection);
+    setStatus('Texto copiado!', 'var(--green)');
+  } catch (_) {
+    setStatus('Could not copy. Check your browser permissions.', 'var(--red)');
+  }
+
+  if (term) term.focus();
+});
+
+document.querySelector('#clear').addEventListener('click', () => {
+  if (term) {
+    term.clear();
+    term.focus();
+  }
+});
+
+async function initializeTerminals() {
+  try {
+    const response = await fetch('/api/terminals');
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+    const data = await response.json();
+    const sessions = (data.terminals || []).filter(item => item.alive);
+
+    for (const item of sessions) addSession(item);
+
+    if (!sessions.length) await createTerminal();
+    else activateSession(Array.from(terminalSessions.values())[0]);
+  } catch (error) {
+    setStatus(`Failed to load terminals: ${error.message}`, 'var(--red)');
+  }
+}
+
+initializeTerminals();
+// Fim SPIA_TERMINAL_TABS_V1
+
+// ---------- Painéis independentes e explorador SPIA ----------
+const panelTerminal = document.querySelector('#panel-terminal');
+const panelEditor = document.querySelector('#panel-editor');
+const panelVisualizer = document.querySelector('#panel-visualizer');
+const explorerPanel = document.querySelector('#explorer-panel');
+const explorerToggle = document.querySelector('#explorer-toggle');
+const filhotePanel = document.querySelector('#filhote-panel');
+const filhoteToggle = document.querySelector('#filhote-toggle');
+const fileList = document.querySelector('#file-list');
+const filePathInput = document.querySelector('#file-path');
+const editorEditArea = document.querySelector('#editor-edit-area');
+const editorCodeMirrorHost = document.querySelector('#editor-codemirror-host');
+const editorPlaceholder = document.querySelector('#editor-placeholder');
+const editorCurrentPath = document.querySelector('#editor-current-path');
+const editorMessage = document.querySelector('#editor-message');
+const editorSaveButton = document.querySelector('#editor-save');
+const editorReloadButton = document.querySelector('#editor-reload');
+const editorCopyCodeButton = document.querySelector('#editor-copy-code');
+const editorPasteButton = document.querySelector('#editor-paste');
+const editorCopyPathButton = document.querySelector('#editor-copy-path');
+const editorState = document.querySelector('#editor-state');
+const editorTabsElement = document.querySelector('#editor-tabs');
+const editorTabs = new Map();
+
+
+const visualizerBody = document.querySelector('#visualizer-panel-body');
+const visualizerPlaceholder = document.querySelector('#visualizer-placeholder');
+const imagePreview = document.querySelector('#image-preview');
+const imagePreviewTabs = document.querySelector('#image-preview-tabs');
+const imagePreviewPath = document.querySelector('#image-preview-path');
+const previewImage = document.querySelector('#preview-image');
+const previewHtmlFrame = document.querySelector('#preview-html-frame');
+const previewCsvContainer = document.querySelector('#preview-csv-container');
+let previewDocumentUrl = null;
+
+const imageOpenNew = document.querySelector('#image-open-new');
+
+const visualizerTabs = new Map(); // path -> {path, type, openedAt}
+// SPIA_PREVIEW_TABS_V2
+let activeVisualizerPath = null;
+let previewImageUrl = null;
+
+
+let currentDirectory = '';
+let openedFilePath = null;
+let originalContent = null;
+let originalSha256 = null;
+let fileIsDirty = false;
+let explorerLoaded = false;
+
+function setPanelCollapsed(panel, collapsed) {
+  panel.dataset.collapsed = String(collapsed);
+  const head = panel.querySelector('.module-head');
+  const body = panel.querySelector('.module-body');
+  head.setAttribute('aria-expanded', String(!collapsed));
+  head.querySelector('.collapse-mark').textContent = collapsed ? '+' : '−';
+  body.hidden = collapsed;
+  if (!collapsed && panel === panelTerminal) {
+    requestAnimationFrame(() => {
+      fitAddon.fit();
+      sendResize();
+      term.focus();
+    });
+  }
+}
+
+document.querySelectorAll('.module-head').forEach((head) => {
+  head.addEventListener('click', () => {
+    const panel = head.closest('.module');
+    setPanelCollapsed(panel, panel.dataset.collapsed !== 'true');
+  });
+});
+
+explorerToggle.addEventListener('click', () => {
+  explorerPanel.hidden = !explorerPanel.hidden;
+  explorerToggle.setAttribute('aria-expanded', String(!explorerPanel.hidden));
+  if (!explorerPanel.hidden && !explorerLoaded) loadDirectory('');
+});
+
+filhoteToggle.addEventListener('click', () => {
+  filhotePanel.hidden = !filhotePanel.hidden;
+  filhoteToggle.setAttribute('aria-expanded', String(!filhotePanel.hidden));
+  filhoteToggle.textContent = filhotePanel.hidden ? '‹' : '›';
+});
+
+function setEditorMessage(message, isError = false) {
+  editorMessage.textContent = message;
+  editorMessage.style.color = isError ? 'var(--red)' : 'var(--muted)';
+}
+
+async function apiPost(url, payload) {
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(payload)
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(data.detail || `Erro HTTP ${response.status}`);
+  }
+  return data;
+}
+
+async function sha256Hex(text) {
+  const bytes = new TextEncoder().encode(text);
+  const digest = await crypto.subtle.digest('SHA-256', bytes);
+  return Array.from(new Uint8Array(digest),
+    byte => byte.toString(16).padStart(2, '0')).join('');
+}
+
+async function apiGet(url) {
+  const response = await fetch(url, {cache: 'no-store'});
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(data.detail || `Erro HTTP ${response.status}`);
+  }
+  return data;
+}
+
+
+// SPIA_PREVIEW_HTML_CSV_V1
+const previewableExtensions = new Set(['.html', '.htm', '.csv']);
+let filePreviewContextMenu = null;
+let pendingFilePreviewPath = null;
+
+function extensionOf(path) {
+  const name = String(path).split('/').pop() || '';
+  const i = name.lastIndexOf('.');
+  return i < 0 ? '' : name.slice(i).toLowerCase();
+}
+
+function hideFilePreviewContextMenu() {
+  if (filePreviewContextMenu) filePreviewContextMenu.remove();
+  filePreviewContextMenu = null;
+  pendingFilePreviewPath = null;
+}
+
+function showFilePreviewContextMenu(x, y, path) {
+  hideFilePreviewContextMenu();
+  if (typeof hidePythonContextMenu === 'function') hidePythonContextMenu();
+  if (typeof hideDirectoryContextMenu === 'function') hideDirectoryContextMenu();
+
+  pendingFilePreviewPath = path;
+  const menu = document.createElement('div');
+  filePreviewContextMenu = menu;
+  Object.assign(menu.style, {
+    position: 'fixed', zIndex: '10020', minWidth: '180px',
+    padding: '5px', border: '1px solid #454c56', borderRadius: '8px',
+    background: '#20252d', boxShadow: '0 8px 24px #0008',
+    color: '#f2f4f7'
+  });
+
+  const preview = document.createElement('button');
+  preview.type = 'button';
+  preview.textContent = 'Visualizar';
+  Object.assign(preview.style, {
+    display: 'block', width: '100%', padding: '9px 12px',
+    border: '0', borderRadius: '5px', background: 'transparent',
+    color: 'inherit', textAlign: 'left', cursor: 'pointer'
+  });
+  preview.addEventListener('click', async () => {
+    const selected = pendingFilePreviewPath;
+    hideFilePreviewContextMenu();
+    if (selected) await openDataPreview(selected);
+  });
+  menu.append(preview);
+  document.body.append(menu);
+
+  const rect = menu.getBoundingClientRect();
+  menu.style.left = Math.max(4, Math.min(x, innerWidth - rect.width - 4)) + 'px';
+  menu.style.top = Math.max(4, Math.min(y, innerHeight - rect.height - 4)) + 'px';
+}
+
+document.addEventListener('pointerdown', (event) => {
+  if (filePreviewContextMenu && !filePreviewContextMenu.contains(event.target)) {
+    hideFilePreviewContextMenu();
+  }
+});
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape') hideFilePreviewContextMenu();
+});
+
+function parseCsvRows(text) {
+  const firstLine = (text.split(/\r\n|\n|\r/, 1)[0] || '');
+  const delimiters = [',', ';', '\t'];
+  let delimiter = ',';
+  let best = -1;
+  for (const candidate of delimiters) {
+    let quoted = false, count = 0;
+    for (let i = 0; i < firstLine.length; i++) {
+      if (firstLine[i] === '"') {
+        if (quoted && firstLine[i + 1] === '"') i++;
+        else quoted = !quoted;
+      } else if (firstLine[i] === candidate && !quoted) count++;
+    }
+    if (count > best) { best = count; delimiter = candidate; }
+  }
+
+  const rows = [];
+  let row = [], cell = '', quoted = false;
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (ch === '"') {
+      if (quoted && text[i + 1] === '"') { cell += '"'; i++; }
+      else quoted = !quoted;
+    } else if (ch === delimiter && !quoted) {
+      row.push(cell); cell = '';
+    } else if ((ch === '\n' || ch === '\r') && !quoted) {
+      if (ch === '\r' && text[i + 1] === '\n') i++;
+      row.push(cell);
+      if (row.some(value => value.length > 0)) rows.push(row);
+      row = []; cell = '';
+    } else {
+      cell += ch;
+    }
+  }
+  row.push(cell);
+  if (row.some(value => value.length > 0)) rows.push(row);
+  return rows;
+}
+
+function showDataPreviewSurface(kind) {
+  showVisualizer();
+  imagePreview.hidden = false;
+  visualizerPlaceholder.hidden = true;
+  previewImage.hidden = kind !== 'image';
+  previewHtmlFrame.hidden = kind !== 'html';
+  previewCsvContainer.hidden = kind !== 'csv';
+  imageOpenNew.disabled = true;
+}
+
+function renderCsvPreview(text) {
+  const rows = parseCsvRows(text);
+  previewCsvContainer.replaceChildren();
+  if (!rows.length) {
+    previewCsvContainer.textContent = 'The CSV file is empty.';
+    return;
+  }
+
+  const table = document.createElement('table');
+  table.className = 'spia-preview-csv-table';
+  const head = document.createElement('thead');
+  const body = document.createElement('tbody');
+  const headers = rows[0];
+
+  const headerRow = document.createElement('tr');
+  headers.forEach(value => {
+    const th = document.createElement('th');
+    th.textContent = value;
+    headerRow.append(th);
+  });
+  head.append(headerRow);
+
+  rows.slice(1).forEach(values => {
+    const tr = document.createElement('tr');
+    for (let i = 0; i < Math.max(headers.length, values.length); i++) {
+      const td = document.createElement('td');
+      td.textContent = values[i] ?? '';
+      tr.append(td);
+    }
+    body.append(tr);
+  });
+  table.append(head, body);
+  previewCsvContainer.append(table);
+}
+
+
+async function openDataPreview(path) {
+  const ext = extensionOf(path);
+  if (!previewableExtensions.has(ext)) return;
+
+  if (!visualizerTabs.has(path)) {
+    visualizerTabs.set(path, {
+      path, type: ext === '.csv' ? 'csv' : 'html', openedAt: Date.now()
+    });
+  } else {
+    visualizerTabs.get(path).type = ext === '.csv' ? 'csv' : 'html';
+  }
+  activateVisualizerTab(path);
+}
+
+function renderActiveDataPreview(path, type) {
+  showVisualizer();
+  imagePreview.hidden = false;
+  visualizerPlaceholder.hidden = true;
+  imagePreviewPath.textContent = path;
+  imagePreviewPath.title = path;
+
+  // Cada aba ocupa a mesma área; apenas o conteúdo do tipo ativo fica visível.
+  previewImage.hidden = true;
+  previewHtmlFrame.hidden = true;
+  previewCsvContainer.hidden = true;
+
+  if (type === 'image') previewImage.hidden = false;
+  else if (type === 'html') previewHtmlFrame.hidden = false;
+  else if (type === 'csv') previewCsvContainer.hidden = false;
+
+  // Evita que o texto alternativo da imagem apareça sobre outra prévia.
+  if (type !== 'image') {
+    previewImage.removeAttribute('src');
+    previewImage.onload = null;
+    previewImage.onerror = null;
+  }
+
+  imageOpenNew.disabled = true;
+
+  if (type === 'image') {
+    const url = '/api/image?path=' + encodeURIComponent(path);
+    previewImage.onload = () => {
+      if (activeVisualizerPath === path) imageOpenNew.disabled = false;
+    };
+    previewImage.onerror = () => {
+      if (activeVisualizerPath !== path) return;
+      visualizerPlaceholder.hidden = false;
+      visualizerPlaceholder.textContent = 'Could not display this image.';
+    };
+    previewImage.src = url;
+    imageOpenNew.onclick = () => window.open(url, '_blank', 'noopener,noreferrer');
+    return;
+  }
+
+  if (type === 'html') {
+    // URL real permite resolver CSS, JS e imagens relativos ao arquivo.
+    // sandbox sem allow-same-origin mantém a página em origem opaca.
+    previewHtmlFrame.removeAttribute('srcdoc');
+    previewHtmlFrame.setAttribute('sandbox', 'allow-scripts');
+    previewHtmlFrame.src = '/preview/' + path.split('/').map(encodeURIComponent).join('/');
+    previewHtmlFrame.onload = () => {
+      if (activeVisualizerPath === path) imageOpenNew.disabled = false;
+    };
+    imageOpenNew.onclick = () => {
+      const url = new URL('/preview/' + path.split('/').map(encodeURIComponent).join('/'), location.href);
+      window.open(url.href, '_blank', 'noopener,noreferrer');
+    };
+    return;
+  }
+
+  if (type === 'csv') {
+    apiGet('/api/file?path=' + encodeURIComponent(path)).then(data => {
+      if (activeVisualizerPath !== path) return;
+      renderCsvPreview(data.content ?? '');
+      imageOpenNew.disabled = false;
+      imageOpenNew.onclick = () => {
+        const blob = new Blob([
+          '<!doctype html><meta charset="utf-8"><title>CSV</title>',
+          '<style>body{font:14px sans-serif;padding:16px}table{border-collapse:collapse}',
+          'td,th{border:1px solid #bbb;padding:6px;text-align:left}</style>',
+          previewCsvContainer.innerHTML
+        ].join(''), {type: 'text/html;charset=utf-8'});
+        const url = URL.createObjectURL(blob);
+        window.open(url, '_blank', 'noopener,noreferrer');
+        setTimeout(() => URL.revokeObjectURL(url), 60000);
+      };
+    }).catch(error => {
+      if (activeVisualizerPath !== path) return;
+      visualizerPlaceholder.hidden = false;
+      visualizerPlaceholder.textContent = 'Error opening CSV: ' + error.message;
+    });
+  }
+}
+
+function renderDirectory(items) {
+  fileList.replaceChildren();
+
+  if (!items.length) {
+    const empty = document.createElement('div');
+    empty.className = 'sub';
+    empty.textContent = 'Directory is empty.';
+    fileList.append(empty);
+    return;
+  }
+
+  for (const item of items) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'file-entry';
+    const ext = item.name.includes('.') ? '.' + item.name.split('.').pop().toLowerCase() : '';
+    button.textContent = item.type === 'directory'
+      ? '📁 ' + item.name
+      : (imageExtensions.has(ext) ? '🖼️ ' : '📄 ') + item.name;
+    button.title = item.path;
+
+    if (item.type === 'directory') {
+      button.addEventListener('click', () => loadDirectory(item.path));
+      button.addEventListener('contextmenu', (event) => {
+        event.preventDefault();
+        showDirectoryContextMenu(event.clientX, event.clientY, item.path);
+      });
+    } else {
+      if (item.path === openedFilePath) button.classList.add('active');
+      button.addEventListener('click', () => openFile(item.path));
+      if (previewableExtensions.has(ext)) {
+        button.addEventListener('contextmenu', (event) => {
+          event.preventDefault();
+          showFilePreviewContextMenu(event.clientX, event.clientY, item.path);
+        });
+      }
+
+      if (item.name.toLowerCase().endsWith('.py')) {
+        button.addEventListener('contextmenu', (event) => {
+          event.preventDefault();
+          showPythonContextMenu(event.clientX, event.clientY, item.path);
+        });
+      }
+    }
+
+    fileList.append(button);
+  }
+}
+
+
+// Menu contextual das pastas.
+const directoryContextMenu = document.createElement('div');
+directoryContextMenu.hidden = true;
+Object.assign(directoryContextMenu.style, {
+  position: 'fixed', zIndex: '10000', minWidth: '180px',
+  padding: '5px', background: '#20252d', color: '#e8edf2',
+  border: '1px solid #596575', borderRadius: '6px',
+  boxShadow: '0 6px 20px #0008'
+});
+
+const newFileMenuButton = document.createElement('button');
+newFileMenuButton.type = 'button';
+newFileMenuButton.textContent = '＋ New file…';
+Object.assign(newFileMenuButton.style, {
+  display: 'block', width: '100%', padding: '9px 11px',
+  border: '0', borderRadius: '4px', background: 'transparent',
+  color: 'inherit', textAlign: 'left', cursor: 'pointer', font: 'inherit'
+});
+newFileMenuButton.addEventListener('mouseenter', () => {
+  newFileMenuButton.style.background = '#354252';
+});
+newFileMenuButton.addEventListener('mouseleave', () => {
+  newFileMenuButton.style.background = 'transparent';
+});
+const newDirectoryMenuButton = document.createElement('button');
+newDirectoryMenuButton.type = 'button';
+newDirectoryMenuButton.textContent = '📁 Nova pasta…';
+Object.assign(newDirectoryMenuButton.style, {
+  display: 'block', width: '100%', padding: '9px 11px',
+  border: '0', borderRadius: '4px', background: 'transparent',
+  color: 'inherit', textAlign: 'left', cursor: 'pointer', font: 'inherit'
+});
+newDirectoryMenuButton.addEventListener('mouseenter', () => {
+  newDirectoryMenuButton.style.background = '#354252';
+});
+newDirectoryMenuButton.addEventListener('mouseleave', () => {
+  newDirectoryMenuButton.style.background = 'transparent';
+});
+
+directoryContextMenu.append(newFileMenuButton, newDirectoryMenuButton);
+document.body.append(directoryContextMenu);
+
+let pendingNewFileDirectory = '';
+let pendingNewDirectory = '';
+
+function hideDirectoryContextMenu() {
+  directoryContextMenu.hidden = true;
+}
+
+function showDirectoryContextMenu(x, y, path) {
+  pendingNewFileDirectory = path;
+  pendingNewDirectory = path;
+  directoryContextMenu.hidden = false;
+  const width = directoryContextMenu.offsetWidth;
+  const height = directoryContextMenu.offsetHeight;
+  directoryContextMenu.style.left =
+    Math.max(4, Math.min(x, window.innerWidth - width - 4)) + 'px';
+  directoryContextMenu.style.top =
+    Math.max(4, Math.min(y, window.innerHeight - height - 4)) + 'px';
+}
+
+// Popup de criação.
+const newFileDialog = document.createElement('dialog');
+newFileDialog.setAttribute('aria-labelledby', 'spia-new-file-title');
+Object.assign(newFileDialog.style, {
+  width: 'min(420px, calc(100vw - 32px))',
+  padding: '20px', border: '1px solid #596575',
+  borderRadius: '8px', background: '#171d19', color: '#e8edf2',
+  boxShadow: '0 12px 40px #000a'
+});
+newFileDialog.innerHTML = `
+  <form id="spia-new-file-form">
+    <h3 id="spia-new-file-title" style="margin:0 0 16px;color:#8bd5a5">
+      Novo arquivo
+    </h3>
+    <label for="spia-new-file-name" style="display:block;margin-bottom:6px">
+      File name
+    </label>
+    <input id="spia-new-file-name" name="name" type="text"
+      required maxlength="180" autocomplete="off"
+      placeholder="Ex.: meu_experimento"
+      style="box-sizing:border-box;width:100%;padding:10px;margin-bottom:14px;
+      color:#e8edf2;background:#0c100d;border:1px solid #596575;border-radius:4px">
+    <label for="spia-new-file-extension" style="display:block;margin-bottom:6px">
+      Formato
+    </label>
+    <select id="spia-new-file-extension" name="extension"
+      style="box-sizing:border-box;width:100%;padding:10px;margin-bottom:18px;
+      color:#e8edf2;background:#0c100d;border:1px solid #596575;border-radius:4px">
+      <option value=".py">Python (.py)</option>
+      <option value=".md">Markdown (.md)</option>
+      <option value=".json">JSON (.json)</option>
+      <option value=".sql">SQL / MySQL (.sql)</option>
+      <option value=".html">HTML (.html)</option>
+      <option value=".css">CSS (.css)</option>
+      <option value=".js">JavaScript (.js)</option>
+      <option value=".txt">Texto (.txt)</option>
+    </select>
+    <div id="spia-new-file-error" role="alert"
+      style="color:#ff8f8f;margin-bottom:12px"></div>
+    <div style="display:flex;justify-content:flex-end;gap:8px">
+      <button type="button" id="spia-new-file-cancel">Cancel</button>
+      <button type="submit" id="spia-new-file-create">Create file</button>
+    </div>
+  </form>`;
+document.body.append(newFileDialog);
+
+const newFileForm = newFileDialog.querySelector('#spia-new-file-form');
+const newFileName = newFileDialog.querySelector('#spia-new-file-name');
+const newFileExtension =
+  newFileDialog.querySelector('#spia-new-file-extension');
+const newFileError = newFileDialog.querySelector('#spia-new-file-error');
+const newFileCreateButton =
+  newFileDialog.querySelector('#spia-new-file-create');
+
+function openNewFileDialog(directory) {
+  pendingNewFileDirectory = directory;
+  hideDirectoryContextMenu();
+  newFileError.textContent = '';
+  newFileName.value = '';
+  newFileExtension.value = '.py';
+  newFileDialog.showModal();
+  newFileName.focus();
+}
+
+document.querySelector('#spia-new-file-button').addEventListener(
+  'click', () => openNewFileDialog(currentDirectory)
+);
+
+newFileMenuButton.addEventListener('click', () => {
+  openNewFileDialog(pendingNewFileDirectory);
+});
+
+newFileDialog.querySelector('#spia-new-file-cancel').addEventListener(
+  'click', () => newFileDialog.close()
+);
+
+newFileForm.addEventListener('submit', async (event) => {
+  event.preventDefault();
+  const directory = pendingNewFileDirectory;
+  const name = newFileName.value.trim();
+  const extension = newFileExtension.value;
+  if (!directory && directory !== '') return;
+  if (!name) {
+    newFileError.textContent = 'Enter a file name.';
+    newFileName.focus();
+    return;
+  }
+
+  newFileCreateButton.disabled = true;
+  newFileError.textContent = '';
+  try {
+    await apiPost('/api/files/create', {
+      directory,
+      name,
+      extension
+    });
+    newFileDialog.close();
+    await loadDirectory(directory);
+    setStatus('File created in folder: ' + (directory || '/'), 'var(--green)');
+  } catch (error) {
+    newFileError.textContent = error.message || 'Could not create the file.';
+  } finally {
+    newFileCreateButton.disabled = false;
+  }
+});
+
+
+// Criação de pastas pelo cabeçalho do explorador.
+const newDirectoryDialog = document.createElement('dialog');
+newDirectoryDialog.setAttribute('aria-labelledby', 'spia-new-directory-title');
+Object.assign(newDirectoryDialog.style, {
+  width: 'min(420px, calc(100vw - 32px))',
+  padding: '20px', border: '1px solid #596575',
+  borderRadius: '8px', background: '#171d19', color: '#e8edf2',
+  boxShadow: '0 12px 40px #000a'
+});
+newDirectoryDialog.innerHTML = `
+  <form id="spia-new-directory-form">
+    <h3 id="spia-new-directory-title"
+      style="margin:0 0 16px;color:#8bd5a5">Nova pasta</h3>
+    <label for="spia-new-directory-name"
+      style="display:block;margin-bottom:6px">Nome da pasta</label>
+    <input id="spia-new-directory-name" name="name" type="text"
+      required maxlength="180" autocomplete="off"
+      placeholder="Ex.: meus_experimentos"
+      style="box-sizing:border-box;width:100%;padding:10px;margin-bottom:14px;
+      color:#e8edf2;background:#0c100d;border:1px solid #596575;border-radius:4px">
+    <div id="spia-new-directory-error" role="alert"
+      style="color:#ff8f8f;margin-bottom:12px"></div>
+    <div style="display:flex;justify-content:flex-end;gap:8px">
+      <button type="button" id="spia-new-directory-cancel">Cancel</button>
+      <button type="submit" id="spia-new-directory-create">Create folder</button>
+    </div>
+  </form>`;
+document.body.append(newDirectoryDialog);
+
+const newDirectoryForm =
+  newDirectoryDialog.querySelector('#spia-new-directory-form');
+const newDirectoryName =
+  newDirectoryDialog.querySelector('#spia-new-directory-name');
+const newDirectoryError =
+  newDirectoryDialog.querySelector('#spia-new-directory-error');
+const newDirectoryCreateButton =
+  newDirectoryDialog.querySelector('#spia-new-directory-create');
+
+function openNewDirectoryDialog(directory) {
+  pendingNewDirectory = directory;
+  hideDirectoryContextMenu();
+  newDirectoryError.textContent = '';
+  newDirectoryName.value = '';
+  newDirectoryDialog.showModal();
+  newDirectoryName.focus();
+}
+
+document.querySelector('#spia-new-directory-button').addEventListener('click', () => {
+  openNewDirectoryDialog(currentDirectory);
+});
+
+newDirectoryMenuButton.addEventListener('click', () => {
+  openNewDirectoryDialog(pendingNewDirectory);
+});
+
+newDirectoryDialog.querySelector('#spia-new-directory-cancel')
+  .addEventListener('click', () => newDirectoryDialog.close());
+
+newDirectoryForm.addEventListener('submit', async (event) => {
+  event.preventDefault();
+  const directory = pendingNewDirectory;
+  const name = newDirectoryName.value.trim();
+
+  if (!name) {
+    newDirectoryError.textContent = 'Enter a folder name.';
+    newDirectoryName.focus();
+    return;
+  }
+
+  newDirectoryCreateButton.disabled = true;
+  newDirectoryError.textContent = '';
+  try {
+    await apiPost('/api/files/create-directory', { directory, name });
+    newDirectoryDialog.close();
+    await loadDirectory(directory);
+    setStatus('Pasta criada: ' + name, 'var(--green)');
+  } catch (error) {
+    newDirectoryError.textContent =
+      error.message || 'Could not create the folder.';
+  } finally {
+    newDirectoryCreateButton.disabled = false;
+  }
+});
+
+document.addEventListener('click', (event) => {
+  if (!directoryContextMenu.contains(event.target)) hideDirectoryContextMenu();
+});
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape') hideDirectoryContextMenu();
+});
+window.addEventListener('blur', hideDirectoryContextMenu);
+
+// Menu de contexto para scripts Python: prepara o comando, mas não o executa.
+const pythonContextMenu = document.createElement('div');
+pythonContextMenu.id = 'python-context-menu';
+pythonContextMenu.hidden = true;
+Object.assign(pythonContextMenu.style, {
+  position: 'fixed',
+  zIndex: '9999',
+  minWidth: '210px',
+  padding: '5px',
+  background: '#20252d',
+  color: '#e8edf2',
+  border: '1px solid #596575',
+  borderRadius: '6px',
+  boxShadow: '0 6px 20px #0008'
+});
+
+const sendPythonCommandButton = document.createElement('button');
+sendPythonCommandButton.type = 'button';
+sendPythonCommandButton.textContent = 'Enviar comando ao Terminal';
+Object.assign(sendPythonCommandButton.style, {
+  display: 'block',
+  width: '100%',
+  padding: '9px 11px',
+  border: '0',
+  borderRadius: '4px',
+  background: 'transparent',
+  color: 'inherit',
+  textAlign: 'left',
+  cursor: 'pointer',
+  font: 'inherit'
+});
+sendPythonCommandButton.addEventListener('mouseenter', () => {
+  sendPythonCommandButton.style.background = '#354252';
+});
+sendPythonCommandButton.addEventListener('mouseleave', () => {
+  sendPythonCommandButton.style.background = 'transparent';
+});
+pythonContextMenu.append(sendPythonCommandButton);
+
+function createPythonMenuButton(label, icon) {
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.textContent = icon + ' ' + label;
+  Object.assign(button.style, {
+    display: 'block',
+    width: '100%',
+    padding: '9px 11px',
+    border: '0',
+    borderRadius: '4px',
+    background: 'transparent',
+    color: 'inherit',
+    textAlign: 'left',
+    cursor: 'pointer',
+    font: 'inherit'
+  });
+  button.addEventListener('mouseenter', () => {
+    button.style.background = '#354252';
+  });
+  button.addEventListener('mouseleave', () => {
+    button.style.background = 'transparent';
+  });
+  pythonContextMenu.append(button);
+  return button;
+}
+
+const openPythonEditorButton =
+  createPythonMenuButton('Open in Editor', '📝');
+const copyPythonCodeButton =
+  createPythonMenuButton('Copy código', '📋');
+const copyPythonPathButton =
+  createPythonMenuButton('Copy caminho', '📁');
+
+document.body.append(pythonContextMenu);
+
+let pendingPythonPath = null;
+
+function hidePythonContextMenu() {
+  pythonContextMenu.hidden = true;
+  pendingPythonPath = null;
+}
+
+function showPythonContextMenu(x, y, path) {
+  pendingPythonPath = path;
+  pythonContextMenu.hidden = false;
+
+  // Ajusta a posição para não deixar o menu sair da janela.
+  const width = pythonContextMenu.offsetWidth;
+  const height = pythonContextMenu.offsetHeight;
+  pythonContextMenu.style.left = Math.max(4, Math.min(x, window.innerWidth - width - 4)) + 'px';
+  pythonContextMenu.style.top = Math.max(4, Math.min(y, window.innerHeight - height - 4)) + 'px';
+}
+
+sendPythonCommandButton.addEventListener('click', () => {
+  const path = pendingPythonPath;
+  hidePythonContextMenu();
+  if (!path) return;
+
+  if (!ws || ws.readyState !== WebSocket.OPEN) {
+    setStatus('Terminal desconectado', 'var(--red)');
+    return;
+  }
+
+  // Aspas simples seguras para caminhos com espaços ou apóstrofos.
+  const quotedPath = "'" + path.replace(/'/g, "'\\''") + "'";
+  setPanelCollapsed(panelTerminal, false);
+  term.paste('python ' + quotedPath);
+  term.focus();
+  setStatus('Comando inserido — revise os argumentos e pressione Enter.', 'var(--green)');
+});
+
+openPythonEditorButton.addEventListener('click', async () => {
+  const path = pendingPythonPath;
+  hidePythonContextMenu();
+  if (path) await openFile(path);
+});
+
+copyPythonCodeButton.addEventListener('click', async () => {
+  const path = pendingPythonPath;
+  hidePythonContextMenu();
+  if (!path) return;
+
+  try {
+    const data = await apiGet('/api/file?path=' + encodeURIComponent(path));
+    await navigator.clipboard.writeText(data.content);
+    setStatus('Código copiado: ' + path, 'var(--green)');
+  } catch (error) {
+    setStatus('Could not copy code: ' + error.message, 'var(--red)');
+  }
+});
+
+copyPythonPathButton.addEventListener('click', async () => {
+  const path = pendingPythonPath;
+  hidePythonContextMenu();
+  if (!path) return;
+
+  try {
+    await navigator.clipboard.writeText(path);
+    setStatus('Caminho copiado: ' + path, 'var(--green)');
+  } catch (error) {
+    setStatus('Could not copy the path. Check clipboard permissions.', 'var(--red)');
+  }
+});
+
+document.addEventListener('click', (event) => {
+  if (!pythonContextMenu.contains(event.target)) hidePythonContextMenu();
+});
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape') hidePythonContextMenu();
+});
+window.addEventListener('blur', hidePythonContextMenu);
+
+async function loadDirectory(path) {
+  fileList.textContent = 'Loading…';
+  try {
+    const data = await apiGet('/api/files?path=' + encodeURIComponent(path));
+    currentDirectory = data.path || '';
+    filePathInput.value = '/' + currentDirectory;
+    renderDirectory(data.items || []);
+    explorerLoaded = true;
+  } catch (error) {
+    fileList.textContent = 'Could not list this directory.';
+    setEditorMessage(error.message, true);
+  }
+}
+
+const imageExtensions = new Set(['.png', '.jpg', '.jpeg', '.gif', '.webp']);
+
+function showVisualizer() {
+  setPanelCollapsed(panelVisualizer, false);
+  visualizerBody.hidden = false;
+}
+
+function renderVisualizerTabs() {
+  imagePreviewTabs.replaceChildren();
+
+  for (const [path] of visualizerTabs) {
+    const tab = document.createElement('button');
+    tab.type = 'button';
+    tab.className = 'image-preview-tab';
+    tab.setAttribute('role', 'tab');
+    tab.setAttribute('aria-selected', String(path === activeVisualizerPath));
+
+    if (path === activeVisualizerPath) {
+      tab.classList.add('active');
+    }
+
+    const label = document.createElement('span');
+    label.className = 'image-preview-tab-label';
+    label.textContent = path.split('/').pop() || path;
+    label.title = path;
+
+    const close = document.createElement('button');
+    close.type = 'button';
+    close.className = 'image-preview-tab-close';
+    close.textContent = '×';
+    close.title = 'Fechar visualização';
+    close.setAttribute('aria-label', 'Fechar ' + path);
+
+    close.addEventListener('click', (event) => {
+      event.stopPropagation();
+      closeVisualizerTab(path);
+    });
+
+    tab.addEventListener('click', () => {
+      activateVisualizerTab(path);
+    });
+
+    tab.append(label, close);
+    imagePreviewTabs.append(tab);
+  }
+}
+
+
+function activateVisualizerTab(path) {
+  const tabData = visualizerTabs.get(path);
+  if (!tabData) return;
+  activeVisualizerPath = path;
+  const ext = extensionOf(path);
+  const type = tabData.type || (imageExtensions.has(ext) ? 'image' : (ext === '.csv' ? 'csv' : 'html'));
+  renderActiveDataPreview(path, type);
+  renderVisualizerTabs();
+}
+
+function closeVisualizerTab(path) {
+  visualizerTabs.delete(path);
+
+  if (activeVisualizerPath === path) {
+    const remaining = Array.from(visualizerTabs.keys());
+
+    if (remaining.length) {
+      activateVisualizerTab(remaining[remaining.length - 1]);
+      return;
+    }
+
+    activeVisualizerPath = null;
+    imagePreview.hidden = true;
+    visualizerPlaceholder.hidden = false;
+    visualizerPlaceholder.textContent =
+      'Select an image in the Explorer to preview it here.';
+    imagePreviewPath.textContent = '';
+    previewImage.removeAttribute('src');
+    previewHtmlFrame.removeAttribute('src');
+    previewHtmlFrame.removeAttribute('srcdoc');
+    previewCsvContainer.replaceChildren();
+    previewHtmlFrame.hidden = true;
+    previewCsvContainer.hidden = true;
+    previewImage.hidden = false;
+    imageOpenNew.disabled = true;
+  }
+
+  renderVisualizerTabs();
+}
+
+function showVisualizer() {
+  setPanelCollapsed(panelVisualizer, false);
+  visualizerBody.hidden = false;
+}
+
+async function openImage(path) {
+  showVisualizer();
+
+  if (!visualizerTabs.has(path)) {
+    visualizerTabs.set(path, {
+      path, type: 'image', openedAt: Date.now()
+    });
+  }
+
+  activateVisualizerTab(path);
+}
+
+
+function saveActiveEditorState() {
+  if (!openedFilePath || !editorTabs.has(openedFilePath)) return;
+  const tab = editorTabs.get(openedFilePath);
+  tab.content = codeEditor.getValue();
+  tab.originalContent = originalContent;
+  tab.originalSha256 = originalSha256;
+  tab.dirty = fileIsDirty;
+}
+
+function renderEditorTabs() {
+  editorTabsElement.replaceChildren();
+  editorTabsElement.hidden = editorTabs.size === 0;
+
+  for (const [path, data] of editorTabs) {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'editor-tab' +
+      (path === openedFilePath ? ' active' : '');
+
+    const select = document.createElement('button');
+    select.type = 'button';
+    select.className = 'editor-tab-select';
+    select.setAttribute('role', 'tab');
+    select.setAttribute('aria-selected', String(path === openedFilePath));
+    select.title = path;
+
+    const label = document.createElement('span');
+    label.className = 'editor-tab-label';
+    label.textContent = path.split('/').pop() || path;
+    label.title = path;
+    select.append(label);
+
+    if (data.dirty) {
+      const dirty = document.createElement('span');
+      dirty.className = 'editor-tab-dirty';
+      dirty.textContent = '●';
+      dirty.title = 'Unsaved changes';
+      select.append(dirty);
+    }
+
+    select.addEventListener('click', () => activateEditorTab(path));
+
+    const close = document.createElement('button');
+    close.type = 'button';
+    close.className = 'editor-tab-close';
+    close.textContent = '×';
+    close.title = 'Close file';
+    close.setAttribute('aria-label', 'Fechar ' + path);
+    close.addEventListener('click', (event) => {
+      event.stopPropagation();
+      closeEditorTab(path);
+    });
+
+    wrapper.append(select, close);
+    editorTabsElement.append(wrapper);
+  }
+}
+
+function activateEditorTab(path) {
+  if (!editorTabs.has(path)) return;
+
+  saveActiveEditorState();
+  const tab = editorTabs.get(path);
+
+  openedFilePath = path;
+  originalContent = tab.originalContent;
+  originalSha256 = tab.originalSha256;
+  fileIsDirty = tab.dirty;
+  codeEditor.setValue(tab.content);
+  codeEditor.setPath(path);
+
+  editorEditArea.hidden = false;
+  editorPlaceholder.hidden = true;
+  editorCurrentPath.textContent = path;
+  editorCurrentPath.title = path;
+  editorSaveButton.disabled = !fileIsDirty;
+  editorReloadButton.disabled = false;
+  editorCopyCodeButton.disabled = false;
+  editorPasteButton.disabled = false;
+  editorCopyPathButton.disabled = false;
+
+  updateEditorState();
+  renderEditorTabs();
+  setPanelCollapsed(panelEditor, false);
+  setEditorMessage(fileIsDirty
+    ? 'File has unsaved changes.'
+    : 'Open file sem alterações pendentes.');
+}
+
+function closeEditorTab(path) {
+  const tab = editorTabs.get(path);
+  if (!tab) return;
+
+  if (path === openedFilePath) saveActiveEditorState();
+
+  if (tab.dirty && !confirm(
+    'O arquivo "' + path +
+    '" has unsaved changes. Close and discard them?'
+  )) return;
+
+  editorTabs.delete(path);
+
+  if (path === openedFilePath) {
+    const nextPath = editorTabs.keys().next().value;
+    openedFilePath = null;
+
+    if (nextPath) {
+      activateEditorTab(nextPath);
+    } else {
+      originalContent = null;
+      originalSha256 = null;
+      fileIsDirty = false;
+      codeEditor.setValue('');
+      editorEditArea.hidden = true;
+      editorPlaceholder.hidden = false;
+      editorCurrentPath.textContent = 'No file open';
+      editorCurrentPath.removeAttribute('title');
+      editorSaveButton.disabled = true;
+      editorReloadButton.disabled = true;
+      editorCopyCodeButton.disabled = true;
+      editorPasteButton.disabled = true;
+      editorCopyPathButton.disabled = true;
+          updateEditorState();
+      renderEditorTabs();
+      setEditorMessage('No file open.');
+    }
+  } else {
+    renderEditorTabs();
+  }
+}
+
+async function openFile(path) {
+  const extension = path.includes('.')
+    ? '.' + path.split('.').pop().toLowerCase()
+    : '';
+
+  if (imageExtensions.has(extension)) {
+    await openImage(path);
+    return;
+  }
+
+  if (editorTabs.has(path)) {
+    activateEditorTab(path);
+    return;
+  }
+
+  setEditorMessage('Opening file…');
+  try {
+    const data = await apiGet('/api/file?path=' + encodeURIComponent(path));
+    editorTabs.set(data.path, {
+      path: data.path,
+      content: data.content,
+      originalContent: data.content,
+      originalSha256: await sha256Hex(data.content),
+      dirty: false
+    });
+
+    activateEditorTab(data.path);
+    await renderDirectory((await apiGet(
+      '/api/files?path=' + encodeURIComponent(currentDirectory)
+    )).items || []);
+  } catch (error) {
+    setEditorMessage(error.message, true);
+  }
+}
+
+const codeEditor = window.SPIACodeEditor.create({
+  parent: editorCodeMirrorHost,
+  content: '',
+  path: '',
+  onChange(value) {
+    fileIsDirty = value !== originalContent;
+
+    if (openedFilePath && editorTabs.has(openedFilePath)) {
+      const tab = editorTabs.get(openedFilePath);
+      tab.content = value;
+      tab.dirty = fileIsDirty;
+    }
+
+    editorSaveButton.disabled = !openedFilePath || !fileIsDirty;
+    updateEditorState();
+    renderEditorTabs();
+    setEditorMessage(fileIsDirty
+      ? 'Unsaved changes.'
+      : 'No pending changes.');
+  }
+});
+
+document.querySelector('#files-refresh').addEventListener('click', () => {
+  loadDirectory(currentDirectory);
+});
+
+document.querySelector('#files-up').addEventListener('click', () => {
+  if (!currentDirectory) return;
+  const parts = currentDirectory.split('/').filter(Boolean);
+  parts.pop();
+  loadDirectory(parts.join('/'));
+});
+
+editorReloadButton.addEventListener('click', async () => {
+  if (!openedFilePath) return;
+
+  const path = openedFilePath;
+  const tab = editorTabs.get(path);
+  if (tab?.dirty && !confirm(
+    'Discard unsaved changes and reload the file?'
+  )) return;
+
+  setEditorMessage('Reloading file…');
+  try {
+    const data = await apiGet('/api/file?path=' + encodeURIComponent(path));
+    const refreshed = {
+      path: data.path,
+      content: data.content,
+      originalContent: data.content,
+      originalSha256: await sha256Hex(data.content),
+      dirty: false
+    };
+
+    // Substitui o estado antigo antes de ativar a aba.
+    // Evita que o conteúdo não salvo seja copiado de volta.
+    editorTabs.set(data.path, refreshed);
+    openedFilePath = null;
+    activateEditorTab(data.path);
+    setEditorMessage('File reloaded from disk.');
+  } catch (error) {
+    setEditorMessage(error.message, true);
+  }
+});
+
+function updateEditorState() {
+  if (!openedFilePath) {
+    editorState.textContent = 'No file';
+    editorState.dataset.state = 'closed';
+  } else if (fileIsDirty) {
+    editorState.textContent = '● Modificado';
+    editorState.dataset.state = 'dirty';
+  } else {
+    editorState.textContent = '✓ No changes';
+    editorState.dataset.state = 'clean';
+  }
+}
+
+editorCopyCodeButton.addEventListener('click', async () => {
+  if (!openedFilePath) return;
+  try {
+    await navigator.clipboard.writeText(codeEditor.getValue());
+    setEditorMessage('File contents copiado.');
+  } catch (error) {
+    setEditorMessage('Could not copy code: ' + error.message, true);
+  }
+});
+
+editorPasteButton.addEventListener('click', async () => {
+  if (!openedFilePath) return;
+
+  try {
+    const text = await navigator.clipboard.readText();
+    if (!text) {
+      setEditorMessage('A área de transferência está vazia.');
+      return;
+    }
+
+    codeEditor.insertText(text);
+    setEditorMessage('Text pasted into the editor. Remember to save.');
+  } catch (error) {
+    setEditorMessage(
+      'Could not access the clipboard: ' + error.message,
+      true
+    );
+  }
+});
+
+editorCopyPathButton.addEventListener('click', async () => {
+  if (!openedFilePath) return;
+  try {
+    await navigator.clipboard.writeText(openedFilePath);
+    setEditorMessage('Caminho copiado: ' + openedFilePath);
+  } catch (error) {
+    setEditorMessage('Could not copy the path: ' + error.message, true);
+  }
+});
+
+editorSaveButton.addEventListener('click', async () => {
+  if (!openedFilePath || !fileIsDirty || !originalSha256) return;
+
+  const path = openedFilePath;
+  const contentToSave = codeEditor.getValue();
+  const expectedSha256 = originalSha256;
+
+  editorSaveButton.disabled = true;
+  setEditorMessage('Saving file…');
+
+  try {
+    const result = await apiPost('/api/file', {
+      path,
+      content: contentToSave,
+      expected_sha256: expectedSha256
+    });
+
+    if (!result.saved || !result.sha256) {
+      throw new Error('The server did not confirm the save.');
+    }
+
+    const tab = editorTabs.get(path);
+    if (tab) {
+      tab.originalContent = contentToSave;
+      tab.originalSha256 = result.sha256;
+
+      // Se o usuário ainda está nesta aba, sincroniza o conteúdo atual.
+      if (openedFilePath === path) {
+        tab.content = codeEditor.getValue();
+        tab.dirty = codeEditor.getValue() !== contentToSave;
+      } else {
+        tab.content = contentToSave;
+        tab.dirty = false;
+      }
+    }
+
+    if (openedFilePath === path) {
+      originalContent = contentToSave;
+      originalSha256 = result.sha256;
+      fileIsDirty = codeEditor.getValue() !== contentToSave;
+      editorSaveButton.disabled = !fileIsDirty;
+      updateEditorState();
+    }
+
+    renderEditorTabs();
+    setEditorMessage(
+      fileIsDirty
+        ? 'File saved; new changes are pending.'
+        : 'File saved successfully.'
+    );
+    await loadDirectory(currentDirectory);
+  } catch (error) {
+    if (openedFilePath === path) {
+      editorSaveButton.disabled =
+        !fileIsDirty || !openedFilePath || !originalSha256;
+    }
+    setEditorMessage(error.message, true);
+  }
+});
+window.addEventListener('resize', () => {
+  if (panelTerminal.dataset.collapsed !== 'true') {
+    requestAnimationFrame(() => {
+      fitAddon.fit();
+      sendResize();
+    });
+  }
+});
+
+
+
+// Monitor real de CPU/RAM. Falhas aqui não interferem no terminal Bash.
+const monitorStatus = document.querySelector('#process-status');
+const systemCpuEl = document.querySelector('#system-cpu');
+const systemRamEl = document.querySelector('#system-ram');
+const processCpuEl = document.querySelector('#process-cpu');
+const processRamEl = document.querySelector('#process-ram');
+
+function formatBytes(bytes) {
+  if (!Number.isFinite(bytes) || bytes < 0) return '—';
+  const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+  let value = bytes;
+  let unit = 0;
+  while (value >= 1024 && unit < units.length - 1) {
+    value /= 1024;
+    unit++;
+  }
+  return `${value.toFixed(unit >= 2 ? 1 : 0)} ${units[unit]}`;
+}
+
+async function updateResourceMonitor() {
+  try {
+    const response = await fetch('/api/monitor', { cache: 'no-store' });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const data = await response.json();
+
+    const cpu = data.system.cpu_percent;
+    systemCpuEl.textContent = cpu == null ? 'Amostrando…' : `${cpu.toFixed(1)}%`;
+    systemRamEl.textContent =
+      `${data.system.percent.toFixed(1)}% · ${formatBytes(data.system.used_bytes)}`;
+
+    const processCpu = data.process.cpu_percent;
+    processCpuEl.textContent =
+      processCpu == null ? 'Amostrando…' : `${processCpu.toFixed(1)}%`;
+    processRamEl.textContent = formatBytes(data.process.ram_bytes);
+
+    const stamp = new Date(data.timestamp * 1000)
+      .toLocaleTimeString('pt-BR', { hour12: false });
+    monitorStatus.textContent =
+      `Atualizado ${stamp} · PID Python ${data.process.pid}`;
+    monitorStatus.style.color = 'var(--muted)';
+  } catch (error) {
+    monitorStatus.textContent = `Monitor unavailable: ${error.message}`;
+    monitorStatus.style.color = 'var(--red)';
+  }
+}
+
+updateResourceMonitor();
+setInterval(updateResourceMonitor, 1500);
+
+
+// Relógio local da SPIA — independente dos controles dos painéis.
+const spiaClock = document.querySelector('#spia-clock');
+function updateSpiaClock() {
+  if (!spiaClock) return;
+  spiaClock.textContent = '🕒 SPIA · ' +
+    new Date().toLocaleTimeString('pt-BR', { hour12: false });
+}
+updateSpiaClock();
+setInterval(updateSpiaClock, 1000);
+
+
+// Chat local do Puppy. A chave NVIDIA nunca chega ao navegador.
+(() => {
+  const form = document.querySelector('#filhote-form');
+  const input = document.querySelector('#filhote-input');
+  const send = document.querySelector('#filhote-send');
+  const messages = document.querySelector('#filhote-messages');
+  const status = document.querySelector('#filhote-status');
+  if (!form || !input || !send || !messages || !status) return;
+
+  const history = [];
+
+  function addMessage(role, content) {
+    const node = document.createElement('div');
+    node.className = `filhote-message ${role}`;
+    node.textContent = content;
+    messages.appendChild(node);
+    messages.scrollTop = messages.scrollHeight;
+    return node;
+  }
+
+  function addSources(sources) {
+    if (!Array.isArray(sources) || sources.length === 0) return;
+
+    const section = document.createElement('div');
+    section.className = 'filhote-sources';
+
+    const heading = document.createElement('strong');
+    heading.textContent = 'Fontes locais consultadas';
+    section.appendChild(heading);
+
+    const list = document.createElement('ul');
+
+    for (const source of sources) {
+      if (!source || typeof source.path !== 'string') continue;
+
+      const item = document.createElement('li');
+      const path = document.createElement('div');
+      path.textContent = source.path;
+      item.appendChild(path);
+
+      if (Array.isArray(source.matched_lines) &&
+          source.matched_lines.length > 0) {
+        const lines = document.createElement('div');
+        lines.textContent = 'Linhas: ' + source.matched_lines.join(', ');
+        item.appendChild(lines);
+      }
+
+      if (source.truncated === true) {
+        const note = document.createElement('div');
+        note.textContent = 'Conteúdo truncado pelo limite de leitura.';
+        item.appendChild(note);
+      }
+
+      list.appendChild(item);
+    }
+
+    if (!list.childElementCount) return;
+    section.appendChild(list);
+    messages.appendChild(section);
+    messages.scrollTop = messages.scrollHeight;
+  }
+
+  form.addEventListener('submit', async (event) => {
+    event.preventDefault();
+    const message = input.value.trim();
+    if (!message || send.disabled) return;
+
+    addMessage('user', message);
+    input.value = '';
+    send.disabled = true;
+    status.textContent = 'Puppy está consultando a NVIDIA…';
+
+    try {
+      const response = await fetch('/api/filhote/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message, history: history.slice(-8) })
+      });
+
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(data.detail || `Falha HTTP ${response.status}`);
+      }
+      if (typeof data.answer !== 'string' || !data.answer.trim()) {
+        throw new Error('The received response was empty.');
+      }
+
+      addMessage('assistant', data.answer);
+      addSources(data.sources);
+      history.push(
+        { role: 'user', content: message },
+        { role: 'assistant', content: data.answer }
+      );
+      status.textContent = `Conectado · ${data.model || 'modelo NVIDIA'}`;
+    } catch (error) {
+      addMessage('assistant', `Unable to respond: ${error.message}`);
+      status.textContent = 'Check the connection and server logs.';
+    } finally {
+      send.disabled = false;
+      input.focus();
+    }
+  });
+})();
+
+</script>
+</body>
+</html>
