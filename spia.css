@@ -492,7 +492,7 @@ main {
   background: #121714;
 }
 #explorer-panel[hidden],
-#filhote-panel[hidden],
+#puppy-panel[hidden],
 .module-body[hidden],
 #panel-visualizer[hidden] {
   display: none !important;
@@ -572,7 +572,7 @@ main {
   box-shadow: none;
 }
 #editor-panel-body { min-height: 0; }
-#filhote-panel {
+#puppy-panel {
   display: flex;
   flex: 0 0 270px;
   flex-direction: column;
@@ -594,9 +594,9 @@ main {
   color: var(--muted);
 }
 
-/* Conteúdo interno do painel direito: monitor + Filhote */
+/* Conteúdo interno do painel direito: monitor + Puppy */
 #resource-monitor,
-#filhote-assistant {
+#puppy-assistant {
   min-height: 0;
   overflow: auto;
 }
@@ -607,17 +607,17 @@ main {
   padding-bottom: 10px;
 }
 
-#filhote-assistant {
+#puppy-assistant {
   flex: 1 1 auto;
 }
 
-#filhote-messages {
+#puppy-messages {
   display: flex;
   flex-direction: column;
   gap: 8px;
   padding: 10px;
 }
-.filhote-message {
+.puppy-message {
   padding: 8px;
   border: 1px solid var(--border);
   border-radius: 7px;
@@ -626,20 +626,20 @@ main {
   font-size: 12px;
   line-height: 1.45;
 }
-.filhote-message.user {
+.puppy-message.user {
   border-left: 3px solid var(--green);
 }
-.filhote-message.assistant {
+.puppy-message.assistant {
   border-left: 3px solid var(--muted);
 }
-#filhote-form {
+#puppy-form {
   display: flex;
   flex-direction: column;
   gap: 7px;
   padding: 10px;
   border-top: 1px solid var(--border);
 }
-#filhote-input {
+#puppy-input {
   box-sizing: border-box;
   width: 100%;
   resize: vertical;
@@ -650,16 +650,16 @@ main {
   border-radius: 6px;
   font: inherit;
 }
-#filhote-send {
+#puppy-send {
   align-self: flex-end;
   padding: 7px 12px;
   cursor: pointer;
 }
-#filhote-send:disabled {
+#puppy-send:disabled {
   cursor: wait;
   opacity: 0.6;
 }
-#filhote-status {
+#puppy-status {
   color: var(--muted);
   font-size: 11px;
   overflow-wrap: anywhere;
@@ -812,14 +812,14 @@ main {
 
 @media (max-width: 900px) {
   #explorer-panel { width: 210px; }
-  #filhote-panel { flex-basis: 220px; min-width: 180px; }
+  #puppy-panel { flex-basis: 220px; min-width: 180px; }
 }
 @media (max-width: 700px) {
   main { gap: 5px; padding: 5px; }
   #tool-rail { width: 36px; flex-basis: 36px; }
   #explorer-panel { position: absolute; z-index: 5; top: 105px; bottom: 5px; left: 45px; width: min(78vw, 290px); box-shadow: 0 8px 28px #0009; }
   #workspace-center { gap: 5px; }
-  #filhote-panel { flex-basis: 180px; min-width: 150px; }
+  #puppy-panel { flex-basis: 180px; min-width: 150px; }
   .module { min-height: 90px; }
   .termhead { padding: 6px; }
   #panel-editor .editor-shell { flex-direction: column; }
@@ -996,7 +996,7 @@ button:not(.module-head):not(.terminal-tab):not(.terminal-tab-close)
 .editor-footer button,
 #image-preview-toolbar button,
 #tool-rail button,
-#filhote-send {
+#puppy-send {
   min-height: var(--ui-button-min-height);
   padding: var(--ui-button-padding-y) var(--ui-button-padding-x);
   border: 1px solid var(--ui-button-border);
@@ -1017,7 +1017,7 @@ button:not(.module-head):not(.terminal-tab):not(.terminal-tab-close)
 .editor-footer button:hover:not(:disabled),
 #image-preview-toolbar button:hover:not(:disabled),
 #tool-rail button:hover:not(:disabled),
-#filhote-send:hover:not(:disabled) {
+#puppy-send:hover:not(:disabled) {
   background: var(--ui-button-hover);
   border-color: var(--green);
 }
@@ -1029,7 +1029,7 @@ button:not(.module-head):not(.terminal-tab):not(.terminal-tab-close)
 .editor-footer button:disabled,
 #image-preview-toolbar button:disabled,
 #tool-rail button:disabled,
-#filhote-send:disabled {
+#puppy-send:disabled {
   opacity: .45;
   cursor: not-allowed;
 }
@@ -1167,7 +1167,7 @@ button:not(.module-head):not(.terminal-tab):not(.terminal-tab-close)
 .explorer-actions button,
 .editor-footer button,
 #image-preview-toolbar button,
-#filhote-send,
+#puppy-send,
 #terminal-new-tab,
 .terminal > footer button {
   border: 1px solid var(--ui-button-border, #35463a);
