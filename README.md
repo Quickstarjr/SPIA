@@ -32,6 +32,24 @@ The initial functional baseline includes:
 - Local configuration through environment variables.
 - Git-based version control.
 
+## Phase 1 — Technical Status
+
+The first technical phase has been completed and recorded in Git.
+
+It brought together three workstreams, implemented in sequence:
+terminal security validation, editor open/save integration, and the project
+backup system. They were committed together because of their technical
+and functional dependencies.
+
+- **Status:** Completed
+- **Reference commit:** `2a630df`
+- **Automated tests:** 100 passed
+- **Terminal security:** separately validated manually
+
+Technical records:
+- [Technical History](docs/HISTORICO_TECNICO.md)
+- [Phase 1 Test Record](docs/FASE_1_TESTES.md)
+
 ## Silicon Puppy
 
 Silicon Puppy (SP) is the optional AI assistant associated with SPIA.
@@ -46,6 +64,7 @@ The current baseline includes an NVIDIA NIM chat integration. Additional provide
 |---|---|
 | Core backend and interface | Implemented |
 | Integrated code editor | Implemented |
+| Terminal security and project backup infrastructure | Implemented |
 | Basic Puppy chat | Implemented |
 | Project lifecycle management | Planned |
 | Project-specific memory | Planned |
